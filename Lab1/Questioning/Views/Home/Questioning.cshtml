@@ -1,0 +1,15 @@
+﻿@model Questioning.Models.QuestioningViewModel
+@{
+    ViewBag.Title = "Тестування";
+}
+
+<h2>@ViewBag.Title</h2>
+
+<p class="text-success">@ViewBag.StatusMessage</p>
+<div>
+    <h4>Опитування</h4>
+    <hr />
+    <p>
+        @Html.ActionLink("У кабінет", "Index", "Home", htmlAttributes: new { @class = "btn btn-primary btn-lg" })
+    </p>
+</div>
