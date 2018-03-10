@@ -1,15 +1,137 @@
 ﻿@model Questioning.Models.QuestioningViewModel
 @{
-    ViewBag.Title = "Тестування";
+    ViewBag.Title = "Опитування";
 }
 
 <h2>@ViewBag.Title</h2>
+@Html.ActionLink("Завершити тестування", "Result", "Home",
+    htmlAttributes: new { @class = "btn btn-primary btn-lg" })
 
 <p class="text-success">@ViewBag.StatusMessage</p>
 <div>
-    <h4>Опитування</h4>
+    <h4>@Model.Rank</h4>
     <hr />
-    <p>
-        @Html.ActionLink("У кабінет", "Index", "Home", htmlAttributes: new { @class = "btn btn-primary btn-lg" })
-    </p>
+    <p>@Model.Question</p>
+    @for (int i = 0; i < Model.Answers.Count(); i++)
+    {
+        <p>
+            @Html.RadioButtonFor(Model => Model.SelectedAnswer, @Model.Answers[i].Id) @Model.Answers[i].Text
+        </p>
+    }
+    <br />
+    @{
+        int linksVisible = 5;
+    }
+
+    <nav aria-label="Page navigation">
+        <ul class="pagination">
+            <li class="@(Model.IsFirst ? "disabled" : "")">
+                @if (Model.IsFirst)
+                {
+                    <span aria-label="First">
+                        <span aria-hidden="true">&laquo;</span>
+                    </span>
+                }
+                else
+                {
+                    <a href="@(Url.Action("Questioning", "Home",
+                         routeValues: new { questionId = 1 }))"
+                       aria-label="First">
+                        <span aria-hidden="true">&laquo;</span>
+                    </a>
+                }
+            </li>
+            @* check cases when page links should render near pagination ends*@
+            @if (linksVisible / 2 + 1 >= Model.QuestionId)
+            {
+                for (int i = 1;
+                i <= linksVisible; i++)
+                {
+                    if (i == Model.QuestionId)
+                    {
+                        <li class="active">
+                            <span @(i >= 10 ? "class=\"fited\"" : "\"\"")>
+                                @i<span class="sr-only">(current)</span>
+                            </span>
+                        </li>
+                    }
+                    else
+                    {
+                        <li>
+                            @Html.ActionLink(i.ToString(), "Questioning", "Home",
+                                       routeValues: new { questionId = i },
+                                       htmlAttributes: new { @class = i >= 10 ? "fited" : "" })
+                        </li>
+                    }
+                }
+                <li><span class="dots">...</span></li>
+            }
+            else if (Model.QuestionCount - linksVisible / 2 <= Model.QuestionId)
+            {
+                <li><span class="dots">...</span></li>
+                for (int i = Model.QuestionCount - linksVisible;
+                i <= Model.QuestionCount; i++)
+                {
+                    if (i == Model.QuestionId)
+                    {
+                        <li class="active">
+                            <span @(i >= 10 ? "class=\"fited\"" : "\"\"")>
+                                @i<span class="sr-only">(current)</span>
+                            </span>
+                        </li>
+                    }
+                    else
+                    {
+                        <li>
+                            @Html.ActionLink(i.ToString(), "Questioning", "Home",
+                                       routeValues: new { questionId = i },
+                                       htmlAttributes: new { @class = i >= 10 ? "fited" : "" })
+                        </li>
+                    }
+                }
+            }
+            else
+            {
+                <li><span class="dots">...</span></li>
+                for (int i = Model.QuestionId - linksVisible / 2;
+                i <= Model.QuestionId + linksVisible / 2; i++)
+                {
+                    if (i == Model.QuestionId)
+                    {
+                        <li class="active">
+                            <span @(i >= 10 ? "class=\"fited\"" : "\"\"")>
+                                @i<span class="sr-only">(current)</span>
+                            </span>
+                        </li>
+                    }
+                    else
+                    {
+                        <li>
+                            @Html.ActionLink(i.ToString(), "Questioning", "Home",
+                                       routeValues: new { questionId = i, pqId = Model.QuestionId, paId = Model.SelectedAnswer },
+                                       htmlAttributes: new { @class = i >= 10 ? "fited" : "" })
+                        </li>
+                    }
+                }
+                <li><span class="dots">...</span></li>
+            }
+
+            <li class="@(Model.IsLast ? "disabled" : "")">
+                @if (Model.IsLast)
+                {
+                    <span aria-label="Last">
+                        <span aria-hidden="true">&raquo;</span>
+                    </span>
+                }
+                else
+                {
+                    <a href="@(Url.Action("Questioning", "Home",
+                        routeValues: new { questionId = Model.QuestionCount }))"
+                        aria-label="Last">
+                        <span aria-hidden="true">&raquo;</span>
+                    </a>
+                }
+            </li>
+        </ul>
+    </nav>
 </div>

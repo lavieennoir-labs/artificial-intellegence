@@ -7,6 +7,57 @@ using System.Web;
 
 namespace Questioning.Models
 {
+    //encapsulation of db context usage
+    public class Questioning
+    {
+        public int GetQuestionCount()
+        {
+            int count = 0;
+            using (var db = new ApplicationDbContext())
+            {
+                count = db.Questions.Count();
+            }
+            return count;
+        }
+
+        ///returns -1 if no anaswered questioins found
+        public int getFirstUnansweredQuestionId(string userId)
+        {
+            int? id = null;
+            int? lastQuestioningNum = null;
+            using (var db = new ApplicationDbContext())
+            {
+                var userResluts = db.QuestioningResults.Where(qr => qr.UserId == userId);
+                lastQuestioningNum = userResluts.Max<QuestioningResult, int?>(qr => qr.QuestioningNum);
+                if (lastQuestioningNum == null) return -1;
+                id = userResluts.Where(
+                    qr => qr.QuestioningNum == lastQuestioningNum 
+                    && qr.SelectedAnswer == null).First().QuestionId;
+            }
+            return id ?? -1;
+        }
+
+        public Question GetQuestion(int id)
+        {
+            Question que = null;
+            using (var db = new ApplicationDbContext())
+            {
+                if (id <= 0 || id > db.Questions.Count())
+                    que = db.Questions.First();
+                else
+                    que = db.Questions.AsNoTracking().Where(q => q.Id == id).First();
+                que.GetAnswerVariants = db.AnswerVariants.AsNoTracking().Where(av => av.QuestionId == que.Id).ToList();
+
+                que.Rank = db.Ranks.Where(r => r.Id == que.RankId).First();
+                foreach(var answerVariant in que.GetAnswerVariants)
+                    answerVariant.Answer = db.Answers.Where(a => a.Id == answerVariant.AnswerId).First();
+            }
+
+            return que;
+        }
+    }
+
+
     public class Rank
     {
         [Key]
@@ -20,29 +71,20 @@ namespace Questioning.Models
         public ICollection<Question> Questions { get; set; }
     }
 
-    public class QuestioningToUser
+    public class QuestioningResult
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
         [Required]
-        public int QuestioningResultId { get; set; }
-        [Required]
         public string UserId { get; set; }
         public ApplicationUser User { get; set; }
-
-    }
-
-    public class QuestioningResult
-    {
-        [Key]
-        [Column(Order = 0)]
-        public int Id { get; set; }
-        [Key]
-        [Column(Order = 1)]
+        [Required]
+        public int QuestioningNum { get; set; }
+        [Required]
         public int QuestionId { get; set; }
         public Question Question { get; set; }
-        [Required]
+        
         public int SelectedAnswerId { get; set; }
         public Answer SelectedAnswer { get; set; }
     }

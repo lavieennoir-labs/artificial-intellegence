@@ -1,15 +1,62 @@
-﻿@model Questioning.Models.IndexViewModel
+﻿@using Microsoft.AspNet.Identity
+@model Questioning.Models.IndexViewModel
 @{
     ViewBag.Title = "Кабінет";
 }
 
-<h2>@ViewBag.Title</h2>
+<h2>@ViewBag.Title - @User.Identity.GetUserName()</h2>
 
 <p class="text-success">@ViewBag.StatusMessage</p>
-<div>
-    <h4>Налашутвання вашого облікового запису</h4>
+<div class="row">
     <hr />
-    <p>
-        @Html.ActionLink("Почати тестування", "Questioning", "Home");
-    </p>
+    <div class="text-center">
+        @Html.ActionLink("Пройти тестування", "Questioning", "Home",
+                     htmlAttributes: new { @class = "btn btn-primary btn-lg" })
+    </div>
+    <hr />
+    <div class="panel panel-default">
+        <div class="panel-heading">Пройдені тестування</div>
+        @{
+            if (Model.PassedQuestionings.Count == 0)
+            {
+                <div class="panel-body">
+                    <h2 class="text-center">Ви ще не пройшли жодного тестування.</h2>
+                </div>
+            }
+            else
+            {
+                <table class="table">
+                    <tr>
+                        <th>#</th>
+                        <th>Питання/Відповіді</th>
+                        <th>Результат</th>
+                        <th>Деталі</th>
+                    </tr>
+                    @{int i = 0;}
+                    @foreach (var questioning in Model.PassedQuestionings)
+                    {
+                        <tr>
+                            <td>@(++i)</td>
+                            <td>@(questioning.TotalQuestionCount + "/" + questioning.AnsweredQuestionCount)</td>
+                            <td>@questioning.IsComplited</td>
+                            <td>
+                                @if(questioning.IsComplited)
+                                {
+                                    @Html.ActionLink("Детальніше", "Details", "Home",
+                                        routeValues: new { questioningId = questioning.QuestioningId },
+                                        htmlAttributes: new { @class="btn btn-success" })
+                                }
+                                else
+                                {
+                                    @Html.ActionLink("Продовжити", "Questioning", "Home",
+                                        //routeValues: new { questioningId = questioning.QuestioningId },
+                                        htmlAttributes: new { @class="btn btn-danger" })
+                                }
+                            </td>
+                        </tr>
+                    }
+                </table>
+                }
+            }
+    </div>
 </div>

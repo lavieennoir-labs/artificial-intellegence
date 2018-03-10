@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
@@ -7,6 +9,7 @@ using Microsoft.AspNet.Identity;
 using Microsoft.AspNet.Identity.Owin;
 using Microsoft.Owin.Security;
 using Questioning.Models;
+using Questioning.Models.ProductionRules;
 
 namespace Questioning.Controllers
 {
@@ -15,7 +18,6 @@ namespace Questioning.Controllers
     {
         private ApplicationSignInManager _signInManager;
         private ApplicationUserManager _userManager;
-        private IAuthenticationManager _authenticationManager;
 
         public HomeController()
         {
@@ -52,23 +54,137 @@ namespace Questioning.Controllers
         }
 
         //
-        // GET: /Manage/Index
+        // GET: /Home/Index
         public async Task<ActionResult> Index(ManageMessageId? message)
         {
             ViewBag.StatusMessage =
                 message == ManageMessageId.Error ? "Сталась помилка." : "";
+            
 
-            var userId = User.Identity.GetUserId();
-            IndexViewModel model;
-            try
+            var passedQuestionings = new List<QuestioningDataViewModel>();
+
+            var username = User.Identity.GetUserName();
+            using (ApplicationDbContext db = new ApplicationDbContext())
             {
-                model = new IndexViewModel
+                var questionCount = db.Questions.Count();
+                //select all questionings for current user
+                var questionings = db.QuestioningResults.Join(
+                    db.Users, 
+                    qr => qr.Id.ToString(), 
+                    u => u.Id, 
+                    (qr, u) => new
+                    {
+                        qr.Id,
+                        u.UserName,
+                        qr.QuestioningNum,
+                        qr.Question,
+                        qr.SelectedAnswer
+                    }).GroupBy(qr => qr.Id);
+
+                foreach(var questioining in questionings)
+                {
+                    Dictionary<string, RankDataViewModel> ranks = new Dictionary<string, RankDataViewModel>();
+                    foreach (var question in questioining)
+                    {
+                        if (ranks.ContainsKey(question.Question.Rank.Text))
+                        {
+                            ranks[question.Question.Rank.Text].Questions.Add(new AnsweredQuestionViewModel
+                            {
+                                Question = question.Question.Text,
+                                Answer = question.SelectedAnswer.Text,
+                                AnswerMark = question.SelectedAnswer.Mark
+                            });
+                            ranks[question.Question.Rank.Text].Total += question.SelectedAnswer.Mark;
+                        }
+                        else
+                            ranks.Add(question.Question.Rank.Text, new RankDataViewModel
+                            {
+                                Total = question.SelectedAnswer.Mark,
+                                Questions = new List<AnsweredQuestionViewModel>
+                                {
+                                    new AnsweredQuestionViewModel
+                                    {
+                                        Question = question.Question.Text,
+                                        Answer = question.SelectedAnswer.Text,
+                                        AnswerMark = question.SelectedAnswer.Mark
+                                    }
+                                }
+                            });
+                    }
+
+                    QuestioningDataViewModel questioningData = new QuestioningDataViewModel
+                    {
+                        TotalQuestionCount = questionCount,
+                        AnsweredQuestionCount = questioining.Count(),
+                        QuestioningId = questioining.Key,
+                        Rank = ranks
+                    };
+
+                    passedQuestionings.Add(questioningData);
+                }
+            }
+
+            var model = new IndexViewModel
+            {
+                PassedQuestionings = passedQuestionings
+            };
+
+            return View(model);
+        }
+
+        int? CurrentQuestioning = null;
+
+        //
+        // GET: /Home/Questioning
+        /// <param name="pqId">previous question id</param>
+        /// <param name="paId">previous selected answer id</param>
+        public async Task<ActionResult> Questioning(ManageMessageId? message, string questionId, int? pqId, int? paId)
+        {
+            QuestioningViewModel model;
+            var userId = User.Identity.GetUserId();
+
+            //update answer
+            if (CurrentQuestioning != null && pqId != null && paId != null)
+            {
+                using (var db = new ApplicationDbContext())
+                {
+
+                }
+            }
+
+
+            ViewBag.StatusMessage =
+                message == ManageMessageId.Error ? "Сталась помилка."
+                : "";
+
+            try {
+                model = new QuestioningViewModel
                 {
                     Logins = await UserManager.GetLoginsAsync(userId),
                     BrowserRemembered = await AuthenticationManager.TwoFactorBrowserRememberedAsync(userId)
                 };
+
+                //get current question
+                var que = new Questioning.Models.Questioning();
+                int qId;
+                if(questionId == null)
+                    qId = que.getFirstUnansweredQuestionId(userId);
+                else if (!Int32.TryParse(questionId, out qId))
+                    qId = que.getFirstUnansweredQuestionId(userId);
+                //current question
+                Question q = que.GetQuestion(qId);
+                model.Question = q.Text;
+                model.QuestionId = q.Id;
+                model.Rank = q.Rank.Text;
+                model.Answers = q.GetAnswerVariants.Select(a => a.Answer).ToList();
+                model.Answers.Shuffle();    //shuffle answer variants
+                model.SelectedAnswer = model.Answers.First().Id;
+                model.QuestionCount = que.GetQuestionCount();
+                model.IsFirst = q.Id == 1;
+                model.IsLast = q.Id == model.QuestionCount;
+
             }
-            catch(InvalidOperationException)
+            catch(Exception e)
             {
                 AuthenticationManager.SignOut();
                 return RedirectToAction("Login", "Account");
@@ -77,30 +193,16 @@ namespace Questioning.Controllers
         }
 
         //
-        // GET: /Manage/Questioning
-        public async Task<ActionResult> Questioning(ManageMessageId? message)
+        // GET: /Home/Reslut
+        public async Task<ActionResult> Reslut(ManageMessageId? message)
         {
             ViewBag.StatusMessage =
                 message == ManageMessageId.Error ? "Сталась помилка."
                 : "";
-
-            var userId = User.Identity.GetUserId();
-            QuestioningViewModel model;
-            try
-            {
-                model = new QuestioningViewModel
-                {
-                    Logins = await UserManager.GetLoginsAsync(userId),
-                    BrowserRemembered = await AuthenticationManager.TwoFactorBrowserRememberedAsync(userId)
-                };
-            }
-            catch
-            {
-                AuthenticationManager.SignOut();
-                return RedirectToAction("Login", "Account");
-            }
-            return View(model);
+            
+            return View();
         }
+
 
         protected override void Dispose(bool disposing)
         {

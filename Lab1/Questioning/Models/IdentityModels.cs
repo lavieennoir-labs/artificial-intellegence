@@ -12,7 +12,7 @@ namespace Questioning.Models
     public class ApplicationUser : IdentityUser
     {
         [ForeignKey("UserId")]
-        public ICollection<QuestioningToUser> QuestioningToUsers { get; set; }
+        public ICollection<QuestioningResult> QuestioningResults { get; set; }
         
         public async Task<ClaimsIdentity> GenerateUserIdentityAsync(UserManager<ApplicationUser> manager)
         {
@@ -30,7 +30,6 @@ namespace Questioning.Models
         public DbSet<Rank> Ranks { get; set; }
         public DbSet<Answer> Answers { get; set; }
         public DbSet<AnswerVariant> AnswerVariants { get; set; }
-        public DbSet<QuestioningToUser> QuestioningToUsers { get; set; }
 
         public ApplicationDbContext()
             : base("DefaultConnection", throwIfV1Schema: false)

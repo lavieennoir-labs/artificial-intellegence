@@ -196,8 +196,18 @@
     </Compile>
     <Compile Include="Models\AccountViewModels.cs" />
     <Compile Include="Models\IdentityModels.cs" />
+    <Compile Include="Models\ListExtensions.cs" />
     <Compile Include="Models\ManageViewModels.cs" />
+    <Compile Include="Models\ProductionRules\AvgRuleOperation.cs" />
+    <Compile Include="Models\ProductionRules\OrRuleOperation.cs" />
+    <Compile Include="Models\ProductionRules\JoinRuleOperation.cs" />
+    <Compile Include="Models\ProductionRules\AndRuleOperation.cs" />
+    <Compile Include="Models\ProductionRules\IRuleOperation.cs" />
+    <Compile Include="Models\ProductionRules\Rule.cs" />
+    <Compile Include="Models\ProductionRules\RuleTree.cs" />
     <Compile Include="Models\QuestioningModels.cs" />
+    <Compile Include="Models\QuestioningRuleTrees.cs" />
+    <Compile Include="Models\UserInfoModels.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Startup.cs" />
   </ItemGroup>
@@ -242,6 +252,8 @@
     <Content Include="Views\Shared\Lockout.cshtml" />
     <Content Include="Views\Shared\_LoginPartial.cshtml" />
     <Content Include="Views\Home\Questioning.cshtml" />
+    <Content Include="Views\Home\Details.cshtml" />
+    <Content Include="Views\Home\Result.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
