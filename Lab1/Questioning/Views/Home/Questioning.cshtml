@@ -3,10 +3,13 @@
     ViewBag.Title = "Опитування";
 }
 
-<h2>@ViewBag.Title</h2>
-@Html.ActionLink("Завершити тестування", "Result", "Home",
-    htmlAttributes: new { @class = "btn btn-primary btn-lg" })
+@section scripts
+{
+    @Scripts.Render("~/bundles/questioning")
+}
 
+
+<h2>@ViewBag.Title</h2>
 <p class="text-success">@ViewBag.StatusMessage</p>
 <div>
     <h4>@Model.Rank</h4>
@@ -15,10 +18,24 @@
     @for (int i = 0; i < Model.Answers.Count(); i++)
     {
         <p>
-            @Html.RadioButtonFor(Model => Model.SelectedAnswer, @Model.Answers[i].Id) @Model.Answers[i].Text
-        </p>
-    }
+            @Html.RadioButtonFor(Model => Model.SelectedAnswer, @Model.Answers[i].Id,
+                          new { id = "rbId" + Model.Answers[i].Id }) @Model.Answers[i].Text
+                    </p>
+                }
     <br />
+    @if (Model.IsLast && Model.AnswerCount >= Model.QuestionCount - 1)
+    {
+        @Html.ActionLink("Завершити тестування", "Result", "Home",
+                             routeValues: new { pqId = Model.QuestionId, paId = Model.SelectedAnswer },
+                             htmlAttributes: new { @class = "btn btn-primary btn-lg", id = "finish-test" })
+    }
+    else if (!Model.IsLast)
+    {
+        @Html.ActionLink("Наступне питання", "Questioning", "Home",
+                             routeValues: new { questionId = Model.QuestionId + 1, pqId = Model.QuestionId, paId = Model.SelectedAnswer },
+                             htmlAttributes: new { @class = "btn btn-primary btn-lg", id = "next-question" })
+    }
+
     @{
         int linksVisible = 5;
     }
@@ -35,7 +52,7 @@
                 else
                 {
                     <a href="@(Url.Action("Questioning", "Home",
-                         routeValues: new { questionId = 1 }))"
+                         routeValues: new { questionId = 1, pqId = Model.QuestionId, paId = Model.SelectedAnswer }))"
                        aria-label="First">
                         <span aria-hidden="true">&laquo;</span>
                     </a>
@@ -59,8 +76,8 @@
                     {
                         <li>
                             @Html.ActionLink(i.ToString(), "Questioning", "Home",
-                                       routeValues: new { questionId = i },
-                                       htmlAttributes: new { @class = i >= 10 ? "fited" : "" })
+                                                                     routeValues: new { questionId = i, pqId = Model.QuestionId, paId = Model.SelectedAnswer },
+                                                                     htmlAttributes: new { @class = i >= 10 ? "fited" : "" })
                         </li>
                     }
                 }
@@ -84,8 +101,8 @@
                     {
                         <li>
                             @Html.ActionLink(i.ToString(), "Questioning", "Home",
-                                       routeValues: new { questionId = i },
-                                       htmlAttributes: new { @class = i >= 10 ? "fited" : "" })
+                                                                     routeValues: new { questionId = i, pqId = Model.QuestionId, paId = Model.SelectedAnswer },
+                                                                     htmlAttributes: new { @class = i >= 10 ? "fited" : "" })
                         </li>
                     }
                 }
@@ -108,8 +125,8 @@
                     {
                         <li>
                             @Html.ActionLink(i.ToString(), "Questioning", "Home",
-                                       routeValues: new { questionId = i, pqId = Model.QuestionId, paId = Model.SelectedAnswer },
-                                       htmlAttributes: new { @class = i >= 10 ? "fited" : "" })
+                                                                     routeValues: new { questionId = i, pqId = Model.QuestionId, paId = Model.SelectedAnswer },
+                                                                     htmlAttributes: new { @class = i >= 10 ? "fited" : "" })
                         </li>
                     }
                 }
@@ -126,8 +143,8 @@
                 else
                 {
                     <a href="@(Url.Action("Questioning", "Home",
-                        routeValues: new { questionId = Model.QuestionCount }))"
-                        aria-label="Last">
+                        routeValues: new { questionId = Model.QuestionCount, pqId = Model.QuestionId, paId = Model.SelectedAnswer  }))"
+                       aria-label="Last">
                         <span aria-hidden="true">&raquo;</span>
                     </a>
                 }

@@ -21,6 +21,7 @@ namespace Questioning.Models
         public bool IsLast { get; set; }
         public bool IsFirst { get; set; }
         public int QuestionCount { get; set; }
+        public int AnswerCount { get; set; }
         public string Rank { get; set; }
         public IList<Answer> Answers { get; set; }
         public int SelectedAnswer { get; set; }

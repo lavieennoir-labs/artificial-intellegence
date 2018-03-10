@@ -26,6 +26,14 @@ namespace Questioning
             bundles.Add(new StyleBundle("~/Content/css").Include(
                       "~/Content/bootstrap.css",
                       "~/Content/site.css"));
+
+            bundles.Add(new ScriptBundle("~/bundles/questioning").Include(
+                        "~/Scripts/Questioning.js"));
+            bundles.Add(new ScriptBundle("~/bundles/result").Include(
+                        "~/Scripts/Result.js"));
+
+            bundles.Add(new ScriptBundle("~/bundles/chart").Include(
+                        "~/Scripts/Chart.bundle.min.js"));
         }
     }
 }

@@ -28,6 +28,14 @@ namespace Questioning.Models
         public int QuestioningId { get; set; }
 
         public bool IsComplited { get => AnsweredQuestionCount == TotalQuestionCount; }
+        public string Result { get
+            {
+                var maxValue = Rank.Max(r => r.Value.Total / (double)(r.Value.Questions.Count() * 5));
+                return string.Join(", або ", 
+                    Rank.Where(r => Math.Abs(r.Value.Total / (double)(r.Value.Questions.Count() * 5) - maxValue) < 0.01).
+                        Select(r => r.Key)).ToLowerInvariant();
+            }
+        }
     }
 
     public class RankDataViewModel

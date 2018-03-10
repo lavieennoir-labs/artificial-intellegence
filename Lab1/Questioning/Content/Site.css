@@ -43,3 +43,18 @@ nav {
     padding: 6px;
 }
 
+.thumbnail {
+    margin: 16px 0px;
+    min-height: 310px;
+}
+
+.table tbody > tr > th:last-child {
+    text-align: right;
+}
+
+.table tbody > tr > td:last-child {
+    text-align: right;
+}
+/*.table tbody > tr > td, .table tbody > tr > th {
+    max-width: 200px;
+}*/

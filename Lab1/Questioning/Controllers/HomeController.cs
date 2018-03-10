@@ -60,69 +60,8 @@ namespace Questioning.Controllers
             ViewBag.StatusMessage =
                 message == ManageMessageId.Error ? "Сталась помилка." : "";
             
-
-            var passedQuestionings = new List<QuestioningDataViewModel>();
-
-            var username = User.Identity.GetUserName();
-            using (ApplicationDbContext db = new ApplicationDbContext())
-            {
-                var questionCount = db.Questions.Count();
-                //select all questionings for current user
-                var questionings = db.QuestioningResults.Join(
-                    db.Users, 
-                    qr => qr.Id.ToString(), 
-                    u => u.Id, 
-                    (qr, u) => new
-                    {
-                        qr.Id,
-                        u.UserName,
-                        qr.QuestioningNum,
-                        qr.Question,
-                        qr.SelectedAnswer
-                    }).GroupBy(qr => qr.Id);
-
-                foreach(var questioining in questionings)
-                {
-                    Dictionary<string, RankDataViewModel> ranks = new Dictionary<string, RankDataViewModel>();
-                    foreach (var question in questioining)
-                    {
-                        if (ranks.ContainsKey(question.Question.Rank.Text))
-                        {
-                            ranks[question.Question.Rank.Text].Questions.Add(new AnsweredQuestionViewModel
-                            {
-                                Question = question.Question.Text,
-                                Answer = question.SelectedAnswer.Text,
-                                AnswerMark = question.SelectedAnswer.Mark
-                            });
-                            ranks[question.Question.Rank.Text].Total += question.SelectedAnswer.Mark;
-                        }
-                        else
-                            ranks.Add(question.Question.Rank.Text, new RankDataViewModel
-                            {
-                                Total = question.SelectedAnswer.Mark,
-                                Questions = new List<AnsweredQuestionViewModel>
-                                {
-                                    new AnsweredQuestionViewModel
-                                    {
-                                        Question = question.Question.Text,
-                                        Answer = question.SelectedAnswer.Text,
-                                        AnswerMark = question.SelectedAnswer.Mark
-                                    }
-                                }
-                            });
-                    }
-
-                    QuestioningDataViewModel questioningData = new QuestioningDataViewModel
-                    {
-                        TotalQuestionCount = questionCount,
-                        AnsweredQuestionCount = questioining.Count(),
-                        QuestioningId = questioining.Key,
-                        Rank = ranks
-                    };
-
-                    passedQuestionings.Add(questioningData);
-                }
-            }
+            var passedQuestionings = new Questioning.Models.Questioning().
+                GetQuestioningData(User.Identity.GetUserId());
 
             var model = new IndexViewModel
             {
@@ -132,7 +71,7 @@ namespace Questioning.Controllers
             return View(model);
         }
 
-        int? CurrentQuestioning = null;
+        int CurrentQuestioning = -1;
 
         //
         // GET: /Home/Questioning
@@ -142,22 +81,53 @@ namespace Questioning.Controllers
         {
             QuestioningViewModel model;
             var userId = User.Identity.GetUserId();
-
-            //update answer
-            if (CurrentQuestioning != null && pqId != null && paId != null)
-            {
-                using (var db = new ApplicationDbContext())
-                {
-
-                }
-            }
-
-
+            
             ViewBag.StatusMessage =
                 message == ManageMessageId.Error ? "Сталась помилка."
                 : "";
-
+                 
             try {
+                var que = new Questioning.Models.Questioning();
+                CurrentQuestioning = que.GetCurrentQuestioningId(userId);
+
+                //create questioning
+                if(CurrentQuestioning == -1)
+                {
+                    var questioningNum = que.GetLastQuestioningId(userId);
+                    if (questioningNum == -1)
+                        questioningNum = 1;
+                    else
+                        questioningNum++;
+                    using (var db = new ApplicationDbContext())
+                    {
+                        var results = db.QuestioningResults;
+                        var questions = db.Questions;
+                        foreach(var question in questions)
+                            results.Add(new QuestioningResult
+                            {
+                                UserId = userId,
+                                QuestioningNum = questioningNum,
+                                QuestionId = question.Id,
+                                SelectedAnswerId = null
+                            });
+                        db.SaveChanges();
+                    }
+                    CurrentQuestioning = que.GetCurrentQuestioningId(userId);
+                }
+                //update answer
+                if (pqId != null && paId != null)
+                {
+                    using (var db = new ApplicationDbContext())
+                    {
+                        var curentResult = db.QuestioningResults.Where(qr =>
+                            qr.UserId == userId &&
+                            qr.QuestioningNum == CurrentQuestioning &&
+                            qr.QuestionId == pqId);
+                        curentResult.First().SelectedAnswerId = (int)paId;
+                        db.SaveChanges();
+                    }
+                }
+
                 model = new QuestioningViewModel
                 {
                     Logins = await UserManager.GetLoginsAsync(userId),
@@ -165,7 +135,6 @@ namespace Questioning.Controllers
                 };
 
                 //get current question
-                var que = new Questioning.Models.Questioning();
                 int qId;
                 if(questionId == null)
                     qId = que.getFirstUnansweredQuestionId(userId);
@@ -173,13 +142,16 @@ namespace Questioning.Controllers
                     qId = que.getFirstUnansweredQuestionId(userId);
                 //current question
                 Question q = que.GetQuestion(qId);
+                var answer = que.GetCurrentQuestioningAnswer(userId, q.Id);
+                
                 model.Question = q.Text;
                 model.QuestionId = q.Id;
                 model.Rank = q.Rank.Text;
                 model.Answers = q.GetAnswerVariants.Select(a => a.Answer).ToList();
-                model.Answers.Shuffle();    //shuffle answer variants
-                model.SelectedAnswer = model.Answers.First().Id;
+                //model.Answers.Shuffle();    //shuffle answer variants
+                model.SelectedAnswer = answer == -1 ? model.Answers.First().Id : answer;
                 model.QuestionCount = que.GetQuestionCount();
+                model.AnswerCount = que.GetAnsweredQuestionsCount(userId, CurrentQuestioning);
                 model.IsFirst = q.Id == 1;
                 model.IsLast = q.Id == model.QuestionCount;
 
@@ -193,14 +165,43 @@ namespace Questioning.Controllers
         }
 
         //
-        // GET: /Home/Reslut
-        public async Task<ActionResult> Reslut(ManageMessageId? message)
+        // GET: /Home/Result
+        public async Task<ActionResult> Result(ManageMessageId? message, int? questioningNum, string questionId, int? pqId, int? paId)
         {
             ViewBag.StatusMessage =
                 message == ManageMessageId.Error ? "Сталась помилка."
                 : "";
-            
-            return View();
+
+            var userId = User.Identity.GetUserId();
+            var que = new Questioning.Models.Questioning();
+            CurrentQuestioning = que.GetCurrentQuestioningId(userId);
+
+            //handle invalid redirect
+            if (CurrentQuestioning == -1 && questioningNum == null)
+            {
+                return RedirectToAction("Index");
+            }
+            //update answer
+            if (pqId != null && paId != null)
+            {
+                using (var db = new ApplicationDbContext())
+                {
+                    var curentResult = db.QuestioningResults.Where(qr =>
+                        qr.UserId == userId &&
+                        qr.QuestioningNum == (questioningNum ?? CurrentQuestioning) &&
+                        qr.QuestionId == pqId);
+                    curentResult.First().SelectedAnswerId = (int)paId;
+                    db.SaveChanges();
+                }
+            }
+
+            //handle result
+            ResultViewModel model = new ResultViewModel
+            {
+                QuestioningData = que.GetQuestioningData(userId, (questioningNum ?? CurrentQuestioning)).First()
+            };
+
+            return View(model);
         }
 
 

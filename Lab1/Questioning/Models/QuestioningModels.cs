@@ -10,6 +10,140 @@ namespace Questioning.Models
     //encapsulation of db context usage
     public class Questioning
     {
+        public List<QuestioningDataViewModel> GetQuestioningData(string userId, int questioningNum = -1)
+        {
+            var passedQuestionings = new List<QuestioningDataViewModel>();         
+
+            IEnumerable<IGrouping<int, QuestioningResult>> questionings;
+
+            using (ApplicationDbContext db = new ApplicationDbContext())
+            {
+                if(questioningNum <= 0)
+                    //select all questionings for current user
+                    questionings = db.QuestioningResults.AsNoTracking().
+                        Where(qr => qr.UserId == userId).ToList().
+                        GroupBy(qr => qr.QuestioningNum);
+                else
+                    questionings = db.QuestioningResults.AsNoTracking().
+                        Where(qr => qr.UserId == userId && qr.QuestioningNum == questioningNum).ToList().
+                        GroupBy(qr => qr.QuestioningNum);
+
+                foreach (var questioining in questionings)
+                {
+                    Dictionary<string, RankDataViewModel> ranks = new Dictionary<string, RankDataViewModel>();
+                    foreach (var question in questioining)
+                    {
+                        string rank = GetQuestionRank(question.QuestionId, db);
+                        Answer answer = new Answer { Text = "", Mark = 0 };
+                        if (question.SelectedAnswerId != null)
+                            answer = db.Answers.AsNoTracking().Where(a => a.Id == question.SelectedAnswerId).First();
+
+                        if (ranks.ContainsKey(rank))
+                        {
+
+                            ranks[rank].Questions.Add(new AnsweredQuestionViewModel
+                            {
+                                Question = db.Questions.AsNoTracking().Where(q => q.Id == question.QuestionId).First().Text,
+                                Answer = answer.Text,
+                                AnswerMark = answer.Mark
+                            });
+                            ranks[rank].Total += answer.Mark;
+                        }
+                        else
+                            ranks.Add(rank, new RankDataViewModel
+                            {
+                                Total = answer.Mark,
+                                Questions = new List<AnsweredQuestionViewModel>
+                                {
+                                    new AnsweredQuestionViewModel
+                                    {
+                                        Question = db.Questions.AsNoTracking().Where(q => q.Id == question.QuestionId).First().Text,
+                                        Answer = answer.Text,
+                                        AnswerMark = answer.Mark,
+                                    }
+                                }
+                            });
+                    }
+
+                    QuestioningDataViewModel questioningData = new QuestioningDataViewModel
+                    {
+                        TotalQuestionCount = GetQuestionCount(),
+                        AnsweredQuestionCount = questioining.Where(qr => qr.SelectedAnswerId != null).Count(),
+                        QuestioningId = questioining.Key,
+                        Rank = ranks,
+
+                    };
+
+                    passedQuestionings.Add(questioningData);
+                }
+            }
+            return passedQuestionings;
+        }
+
+        public int GetAnsweredQuestionsCount(string userId, int questioningNum)
+        {
+            int count;
+            using(var db = new ApplicationDbContext())
+            {
+                count = db.QuestioningResults.Where(
+                    qr => qr.UserId == userId
+                    && qr.QuestioningNum == questioningNum
+                    && qr.SelectedAnswerId != null).Count();
+            }
+            return count;
+        }
+
+        public string GetQuestionRank(int questionId, ApplicationDbContext db)
+        {
+            string rank;
+            rank = db.Questions.Where(q => q.Id == questionId).
+                Join(
+                    db.Ranks,
+                    q => q.RankId,
+                    r => r.Id,
+                    (q, r) => r.Text
+                ).First();
+            return rank;
+        }
+
+        public string GetQuestionRank(int questionId)
+        {
+            string rank;
+            using (var db = new ApplicationDbContext())
+            {
+                rank = db.Questions.Where(q => q.Id == questionId).
+                    Join(
+                        db.Ranks,
+                        q => q.RankId,
+                        r => r.Id,
+                        (q, r) => r.Text
+                    ).First();
+            }
+            return rank;
+        }
+
+        public int GetCurrentQuestioningAnswer(string userId, int questionId)
+        {
+            int lastQuestioningNum = GetCurrentQuestioningId(userId);
+            if (lastQuestioningNum == -1)
+                return -1;
+            int? answer;
+            using (var db = new ApplicationDbContext())
+            {
+                answer = db.QuestioningResults.Where(
+                    qr => qr.UserId == userId
+                    && qr.QuestioningNum == lastQuestioningNum
+                    && qr.QuestionId == questionId).First().SelectedAnswerId;
+            }
+            return answer ?? -1;
+        }
+
+        public int GetQuestionCount(ApplicationDbContext db)
+        {
+            int count = 0;
+                count = db.Questions.Count();
+            return count;
+        }
         public int GetQuestionCount()
         {
             int count = 0;
@@ -24,17 +158,46 @@ namespace Questioning.Models
         public int getFirstUnansweredQuestionId(string userId)
         {
             int? id = null;
+            int? lastQuestioningNum = GetCurrentQuestioningId(userId);
+            if (lastQuestioningNum == -1) return -1;
+
+            using (var db = new ApplicationDbContext())
+            {
+                var seq = db.QuestioningResults.Where(
+                    qr => qr.UserId == userId
+                    && qr.QuestioningNum == lastQuestioningNum
+                    && qr.SelectedAnswerId == null);
+                if (seq.Count() == 0)
+                    id = null;
+                else
+                    id = seq.First().QuestionId;
+            }
+            return id ?? -1;
+        }
+
+        public int GetLastQuestioningId(string userId)
+        {
             int? lastQuestioningNum = null;
             using (var db = new ApplicationDbContext())
             {
                 var userResluts = db.QuestioningResults.Where(qr => qr.UserId == userId);
                 lastQuestioningNum = userResluts.Max<QuestioningResult, int?>(qr => qr.QuestioningNum);
-                if (lastQuestioningNum == null) return -1;
-                id = userResluts.Where(
-                    qr => qr.QuestioningNum == lastQuestioningNum 
-                    && qr.SelectedAnswer == null).First().QuestionId;
             }
-            return id ?? -1;
+            return lastQuestioningNum ?? -1;
+        }
+
+        public int GetCurrentQuestioningId(string userId)
+        {
+            int? lastQuestioningNum = null;
+            using (var db = new ApplicationDbContext())
+            {
+                var userResluts = db.QuestioningResults.Where(qr => qr.UserId == userId && qr.SelectedAnswer == null);
+                if (userResluts.Count() == 0)
+                    lastQuestioningNum = null;
+                else
+                    lastQuestioningNum = userResluts.Max<QuestioningResult, int?>(qr => qr.QuestioningNum);
+            }
+            return lastQuestioningNum ?? -1;
         }
 
         public Question GetQuestion(int id)
@@ -85,7 +248,7 @@ namespace Questioning.Models
         public int QuestionId { get; set; }
         public Question Question { get; set; }
         
-        public int SelectedAnswerId { get; set; }
+        public int? SelectedAnswerId { get; set; }
         public Answer SelectedAnswer { get; set; }
     }
 

@@ -10,8 +10,21 @@
 <div class="row">
     <hr />
     <div class="text-center">
-        @Html.ActionLink("Пройти тестування", "Questioning", "Home",
-                     htmlAttributes: new { @class = "btn btn-primary btn-lg" })
+        <br />
+        <br />
+        @{ 
+            string actionButtonText;
+            if (Model.PassedQuestionings.Count() == 0)
+            { actionButtonText = "Пройти тестування"; }
+            else if (Model.PassedQuestionings.Where(pq => pq.IsComplited == false).Count() > 0)
+            { actionButtonText = "Продовжити тестування"; }
+            else
+            { actionButtonText = "Нове тестування"; }
+        }
+        @Html.ActionLink(actionButtonText, "Questioning", null,
+                      htmlAttributes: new { @class = "btn btn-primary btn-lg" })
+        <br />
+        <br />
     </div>
     <hr />
     <div class="panel panel-default">
@@ -25,10 +38,12 @@
             }
             else
             {
+                <div class="table-responsive">
                 <table class="table">
                     <tr>
                         <th>#</th>
-                        <th>Питання/Відповіді</th>
+                        <th>Відповіді/Питання</th>
+                        <th>Завершено</th>
                         <th>Результат</th>
                         <th>Деталі</th>
                     </tr>
@@ -37,18 +52,19 @@
                     {
                         <tr>
                             <td>@(++i)</td>
-                            <td>@(questioning.TotalQuestionCount + "/" + questioning.AnsweredQuestionCount)</td>
-                            <td>@questioning.IsComplited</td>
+                            <td>@(questioning.AnsweredQuestionCount + "/" + questioning.TotalQuestionCount)</td>
+                            <td>@(questioning.IsComplited ? "Так" : "Ні")</td>
+                            <td>@(questioning.IsComplited ? questioning.Result : "-")</td>
                             <td>
                                 @if(questioning.IsComplited)
                                 {
-                                    @Html.ActionLink("Детальніше", "Details", "Home",
-                                        routeValues: new { questioningId = questioning.QuestioningId },
+                                    @Html.ActionLink("Детальніше", "Result", "Home",
+                                        routeValues: new { questioningNum = questioning.QuestioningId },
                                         htmlAttributes: new { @class="btn btn-success" })
                                 }
                                 else
                                 {
-                                    @Html.ActionLink("Продовжити", "Questioning", "Home",
+                                    @Html.ActionLink("Продовжити", "Questioning", null,
                                         //routeValues: new { questioningId = questioning.QuestioningId },
                                         htmlAttributes: new { @class="btn btn-danger" })
                                 }
@@ -56,6 +72,7 @@
                         </tr>
                     }
                 </table>
+                </div>
                 }
             }
     </div>

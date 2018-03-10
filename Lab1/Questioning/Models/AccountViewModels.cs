@@ -5,11 +5,11 @@ namespace Questioning.Models
 {
     public class LoginViewModel
     {
-        [Required]
+        [Required(ErrorMessage = "Це поле обов'язкове")]
         [Display(Name = "Ім'я користувача")]
         public string Username { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "Це поле обов'язкове")]
         [DataType(DataType.Password)]
         [Display(Name = "Пароль")]
         public string Password { get; set; }
@@ -20,12 +20,12 @@ namespace Questioning.Models
 
     public class RegisterViewModel
     {
-        [Required]
+        [Required(ErrorMessage = "Це поле обов'язкове")]
         [StringLength(100, ErrorMessage = "Довжина імені повинна бути не манше {2} символів.", MinimumLength = 4)]
         [Display(Name = "Ім'я користувача")]
         public string Username { get; set; }
 
-        [Required]
+        [Required(ErrorMessage = "Це поле обов'язкове")]
         [StringLength(100, ErrorMessage = "Довжина пароля повинна бути не манше {2} символів.", MinimumLength = 4)]
         [DataType(DataType.Password)]
         [Display(Name = "Пароль")]

@@ -1,13 +1,127 @@
-﻿
+﻿@model Questioning.Models.ResultViewModel
+
 @{
     ViewBag.Title = "Результат";
 }
-
+@section scripts
+{
+    @Scripts.Render("~/bundles/result")
+<script>
+    initChart("nvChart", "Початківець", ["1", "2", "3", "4"],
+        [@(String.Join(", ",
+            Model.QuestioningData.Rank["Початківець"].Questions.
+            Select(q => q.AnswerMark)))], 
+        ["rgba(0, 200, 83, 0.4)",
+            "rgba(0, 200, 83, 0.4)",
+            "rgba(0, 200, 83, 0.4)",
+            "rgba(0, 200, 83, 0.4)"]);
+    initChart("advChart", "Твердий початківець", ["5", "6", "7"],
+        [@(String.Join(", ",
+            Model.QuestioningData.Rank["Твердий початківець"].Questions.
+            Select(q => q.AnswerMark)))],
+        ["rgba(104, 159, 56, 0.4)",
+            "rgba(104, 159, 56, 0.4)",
+            "rgba(104, 159, 56, 0.4)"]);
+    initChart("comChart", "Компетентний", ["8", "9", "10"],
+        [@(String.Join(", ",
+            Model.QuestioningData.Rank["Компетентний"].Questions.
+            Select(q => q.AnswerMark)))],
+        ["rgba(0, 121, 107, 0.4)",
+            "rgba(0, 121, 107, 0.4)",
+            "rgba(0, 121, 107, 0.4)"]);
+    initChart("proChart", "Досвідчений", ["11", "12", "13"],
+        [@(String.Join(", ",
+            Model.QuestioningData.Rank["Досвідчений"].Questions.
+            Select(q => q.AnswerMark)))],
+        ["rgba(48, 63, 159, 0.4)",
+            "rgba(48, 63, 159, 0.4)",
+            "rgba(48, 63, 159, 0.4)"]);
+    initChart("expChart", "Експерт", ["14", "15", "16"],
+        [@(String.Join(", ",
+            Model.QuestioningData.Rank["Експерт"].Questions.
+            Select(q => q.AnswerMark)))],
+        ["rgba(81, 45, 168, 0.4)",
+            "rgba(81, 45, 168, 0.4)",
+            "rgba(81, 45, 168, 0.4)"]);
+    initChartCompare("compareChart", "Результат",
+        ["Початківець", "Твердий початківець", "Компетентний", "Досвідчений","Експерт"],
+        [@(String.Join(", ",
+            Model.QuestioningData.Rank.Select(r => r.Value.Total / (double)(r.Value.Questions.Count() * 5) * 100)))],
+        ["rgba(0, 200, 83, 0.4)",
+            "rgba(104, 159, 56, 0.4)",
+            "rgba(0, 121, 107, 0.4)",
+            "rgba(48, 63, 159, 0.4)",
+            "rgba(81, 45, 168, 0.4)"]);
+</script>
+}
 <h2>@ViewBag.Title</h2>
 
 <p class="text-success">@ViewBag.StatusMessage</p>
 <div>
-    <h4></h4>
+    <h3>
+        Ви @(Model.QuestioningData.Result).
+    </h3>
+
     <hr />
-    <p></p>
+    @foreach (var r in Model.QuestioningData.Rank)
+    {
+        var num = r.Value.Total % 10;
+        string scoreText;
+        if (r.Value.Total % 100 > 4 && r.Value.Total % 100 < 20)
+        { scoreText = "балів"; }
+        else if (num == 1)
+        { scoreText = "бал"; }
+        else if (num > 1 && num < 5)
+        { scoreText = "бали"; }
+        else
+        { scoreText = "балів"; }
+        var numSum = (r.Value.Questions.Count() * 5) % 10;
+        string scoreTextSum;
+        if ((r.Value.Questions.Count() * 5) % 100 > 4 && (r.Value.Questions.Count() * 5) % 100 < 20)
+        { scoreTextSum = "балів"; }
+        else if (numSum == 1)
+        { scoreTextSum = "бал"; }
+        else if (numSum > 1 && numSum < 5)
+        { scoreTextSum = "бали"; }
+        else
+        { scoreTextSum = "балів"; }
+        <p><b>@r.Key</b> - @r.Value.Total @scoreText / @(r.Value.Questions.Count() * 5) @scoreTextSum
+        &emsp;(@((r.Value.Total / (double)(r.Value.Questions.Count() * 5) * 100).ToString("N2"))%)</p>
+    }
+    <hr />
+    <div class="col-xl-12">
+        <span class="thumbnail">
+            <canvas id="compareChart"></canvas>
+        </span>
+    </div>
+    <hr />
+    <h3>Набрані бали</h3>
+    <div class="row">
+        <div class="col-xs-12 col-sm-6">
+            <span class="thumbnail">
+                <canvas id="nvChart"></canvas>
+            </span>
+        </div>
+        <div class="col-xs-12 col-sm-6">
+            <span class="thumbnail">
+                <canvas id="advChart"></canvas>
+            </span>
+        </div>
+        <div class="col-xs-12 col-sm-6">
+            <span class="thumbnail">
+                <canvas id="comChart"></canvas>
+            </span>
+        </div>
+        <div class="col-xs-12 col-sm-6">
+            <span class="thumbnail">
+                <canvas id="proChart"></canvas>
+            </span>
+        </div>
+        <div class="col-xs-12 col-sm-6">
+            <span class="thumbnail">
+                <canvas id="expChart"></canvas>
+            </span>
+        </div>
+    </div>
+    <hr />
 </div>
