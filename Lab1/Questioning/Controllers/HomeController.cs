@@ -53,6 +53,7 @@ namespace Questioning.Controllers
             }
         }
 
+
         //
         // GET: /Home/Index
         public async Task<ActionResult> Index(ManageMessageId? message)
@@ -79,6 +80,7 @@ namespace Questioning.Controllers
         /// <param name="paId">previous selected answer id</param>
         public async Task<ActionResult> Questioning(ManageMessageId? message, string questionId, int? pqId, int? paId)
         {
+            var questioningFrame = new QuestioningFrameProvider().GetFrame();
             QuestioningViewModel model;
             var userId = User.Identity.GetUserId();
             

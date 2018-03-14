@@ -31,9 +31,10 @@ namespace Questioning.Models
         public string Result { get
             {
                 var maxValue = Rank.Max(r => r.Value.Total / (double)(r.Value.Questions.Count() * 5));
-                return string.Join(", або ", 
+                return //string.Join(", або ",
                     Rank.Where(r => Math.Abs(r.Value.Total / (double)(r.Value.Questions.Count() * 5) - maxValue) < 0.01).
-                        Select(r => r.Key)).ToLowerInvariant();
+                        //Select(r => r.Key)).ToLowerInvariant();
+                        First().Key.ToLowerInvariant();
             }
         }
     }
