@@ -1,0 +1,118 @@
+﻿@model Lab2.Models.MatrixViewModel
+@{
+    ViewBag.Title = "Home Page";
+}
+@section scripts
+{
+    @*@Scripts.Render("~/bundles/userScripts");*@
+    <script src="~/Scripts/Chart.bundle.min.js"></script>
+    <script src="~/Scripts/chart-init.js"></script>
+    <script src="~/Scripts/site.js"></script>
+}
+<p class="text-success">@ViewBag.StatusMessage</p>
+<div class="row">
+    <div class="form-group">
+        <label for="baseSetName">Нечітка множина</label>
+        <input type="text" class="form-control form-control-lg" id="baseSetName" value="@Model.BaseSetName"
+               placeholder="Введіть назву нечіткої множини">
+    </div>
+    <div class="panel panel-default">
+        <div class="panel-heading">Матриця попарних порівнянь</div>
+        <div class="table-responsive">
+            <table class="table">
+                <tr>
+                    <th id="0|0">
+                        <input type="text" class="form-control"
+                               value="@Model.ParamsName"
+                               placeholder="Введіть назву параметрів">
+                    </th>
+                    @{ int i = 1;}
+                    @foreach (var param in Model.BaseParams)
+                    {
+                        <th id="0|@i">
+                            @param
+                        </th>
+                        i++;
+                    }
+                </tr>
+                @{ i = 0;}
+                @foreach (var param in Model.BaseParams)
+                {
+                    <tr>
+                        <td id="@(i+1)|0">
+                            <input type="text" class="form-control param-name"
+                                   value="@param"
+                                   placeholder="Введіть назву параметрів">
+                        </td>
+                        @{ int j = 0;}
+                        @foreach (var mark in Model.ComparisonMarks)
+                        {
+                            if (i == Model.BaseParams.Count() - 1)
+                            {
+                                <td id="@(i+1)|@(j+1)">
+                                    <input type="text" class="form-control"
+                                           value="@mark.ToString("N4")"
+                                           placeholder="Введіть рівень переваги">
+                                </td>
+                            }
+                            else
+                            {
+                                <td id="@(i+1)|@(j+1)" class="calculated">
+                                    @(Math.Round(
+                                                                (double)Model.ComparisonMarks[j]
+                                                                / (double)Model.ComparisonMarks[i], 4).ToString("N4"))
+                                </td>
+                            }
+                            j++;
+                        }
+                    </tr>
+                    i++;
+                }
+                <tr>
+                    <td style="padding: 16px;"></td>
+                    @foreach (var mark in Model.ComparisonMarks)
+                    {
+                        <td></td>
+                    }
+                </tr>
+                <tr>
+                    <td style="text-align: center;">Σ</td>
+                    @{ i = 0;}
+                    @foreach (var mark in Model.ComparisonMarks)
+                    {
+                        <td id="@(Model.BaseParams.Count+1)|@(i+1)" class="calculated-sum">
+                            @Model.ColSums[i].ToString("N4")
+                        </td>
+                        i++;
+                    }
+                </tr>
+                <tr>
+                    <td style="text-align: center;">1/Σ</td>
+                    @{ i = 0;}
+                    @foreach (var mark in Model.ComparisonMarks)
+                    {
+                        <td id="@(Model.BaseParams.Count+2)|@(i+1)" class="calculated-sum-revers">
+                            @((1.0 / Model.ColSums[i]).ToString("N4"))
+                        </td>
+                        i++;
+                    }
+                </tr>
+                <tr>
+                    <td style="text-align: center;">M(X)</td>
+                    @{ i = 0;}
+                    @foreach (var mark in Model.ComparisonMarks)
+                    {
+                        <td id="@(Model.BaseParams.Count+3)|@(i+1)" class="calculated-func">
+                            @Model.IndependentFunc[i].ToString("N4")
+                        </td>
+                        i++;
+                    }
+                </tr>
+            </table>
+        </div>
+    </div>
+    <hr />
+    <div class="col-lg-12">
+        <canvas id="funcChart"></canvas>
+    </div>
+</div>
