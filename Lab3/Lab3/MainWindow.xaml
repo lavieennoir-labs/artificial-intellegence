@@ -1,0 +1,86 @@
+﻿<Window x:Class="Lab3.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Lab3"
+        xmlns:model="clr-namespace:Lab3.Model"
+        mc:Ignorable="d" Name="window"
+        Title="Lab3" Height="600" Width="450" MinHeight="600" MinWidth="450">
+        <Grid>
+            <Grid.RowDefinitions>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition Height="auto"/>
+            <RowDefinition/>
+            </Grid.RowDefinitions>
+        <TextBlock Text="Мережа правил" FontSize="18"  FontFamily="Segoe UI Light" HorizontalAlignment="Stretch" Padding="16" Foreground="White" Background="#CC000000"/>
+        <StackPanel Orientation="Horizontal" Grid.Row="1">
+            <TextBlock Text="Об'єкт: " Padding="8 2" Margin="0 4"  FontSize="16"  FontFamily="Segoe UI Light"/>
+            <ComboBox Padding="8 2" Margin="0 4" FontSize="16"  FontFamily="Segoe UI Light"
+                SelectedIndex="0">
+                <TextBlock>Персональний комп'ютер</TextBlock>
+                <TextBlock>Ноутбук</TextBlock>
+                <TextBlock>Нетбук</TextBlock>
+                <TextBlock>Моноблок</TextBlock>
+            </ComboBox>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Grid.Row="2">
+            <TextBlock Text="Ймовірність: " Padding="8 2" Margin="0 4"  FontSize="16"  FontFamily="Segoe UI Light"/>
+            <TextBlock Text="{Binding DefinitionCoef}" Padding="8 2" Margin="0 4"  FontSize="16"  FontFamily="Segoe UI Light"
+                DataContext="{Binding ElementName=window, Path=Root}"/>
+        </StackPanel>
+        <Separator Grid.Row="3"/>
+        <ScrollViewer Grid.Row="4" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+            <TreeView BorderThickness="0" Name="treeView" SelectedItemChanged="treeView_SelectedItemChanged" Margin="16">
+                <TreeView.Resources>
+                    <ContextMenu x:Key ="LeafContext"  StaysOpen="true">
+                        <MenuItem Header="Додати вузол" Click="AddLeaf_Click"/>
+                        <MenuItem Header="Видалити вузол" Click="RemoveLeaf_Click"/>
+                    </ContextMenu>
+                    <ContextMenu x:Key="NodeContext" StaysOpen="true">
+                        <MenuItem Header="Додати вузол" Click="AddLeaf_Click"/>
+                        <MenuItem Header="Видалити вузол" Click="RemoveLeaf_Click"/>
+                        <MenuItem Header="Змінити правило">
+                            <RadioButton IsChecked="False" Content="І"
+                                GroupName="RuleItem" IsHitTestVisible="True" Click="MenuRadioItem_Click">
+                            </RadioButton>
+                            <RadioButton IsChecked="True" Content="Або"
+                                GroupName="RuleItem" IsHitTestVisible="True" Click="MenuRadioItem_Click">
+                            </RadioButton>
+                            <RadioButton IsChecked="False" Content="Розділення" Name="rbDivRule"
+                                GroupName="RuleItem" IsHitTestVisible="True" Click="MenuRadioItem_Click">
+                            </RadioButton>
+                        </MenuItem>
+                    </ContextMenu>
+                </TreeView.Resources>
+                <TreeView.ItemTemplate>
+                    <HierarchicalDataTemplate DataType="{x:Type model:Node}" ItemsSource="{Binding Children}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="auto"/>
+                                <ColumnDefinition Width="auto"/>
+                                <ColumnDefinition Width="auto"/>
+                                <ColumnDefinition Width="auto"/>
+                                <ColumnDefinition Width="auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBox Text="{Binding Title, Mode=TwoWay}" Padding="8 2" Margin="0 4" Grid.Column="0" Visibility="{Binding IsLeaf, Converter={StaticResource boolToVisConverter}}" FontSize="16"  FontFamily="Segoe UI Light"/>
+                            <TextBlock Text="{Binding RuleName, Mode=OneWay}" Padding="8 2" Margin="0 4" Grid.Column="0" Visibility="{Binding IsNode, Converter={StaticResource boolToVisConverter}}" FontSize="16"  FontFamily="Segoe UI Light"/>
+                            <TextBlock Text=" (Коефіцієнт:" Padding="8 2" Margin="0 4"  Grid.Column="1"  FontSize="16"  FontFamily="Segoe UI Light"/>
+                            <TextBox Text="{Binding DefinitionCoef, Mode=TwoWay}" Padding="8 2" Margin="0 4"  Grid.Column="2" Visibility="{Binding IsLeaf, Converter={StaticResource boolToVisConverter}}" FontSize="16" FontFamily="Segoe UI Light"/>
+                            <TextBlock Text="{Binding DefinitionCoef, Mode=TwoWay}" Padding="8 2" Margin="0 4"  Grid.Column="2" Visibility="{Binding IsNode, Converter={StaticResource boolToVisConverter}}" FontSize="16" FontFamily="Segoe UI Light"/>
+                            <TextBlock Text=")" Padding="8 2" Margin="0 4"  Grid.Column="3"  FontSize="16"  FontFamily="Segoe UI Light"/>
+                            <CheckBox Content="" IsChecked="{Binding Selected, Mode=TwoWay}" Padding="8 2" Margin="0 4"  Grid.Column="4" Visibility="{Binding IsLeaf, Converter={StaticResource boolToVisConverter}}" FontSize="16"  FontFamily="Segoe UI Light"/>
+                        </Grid>
+                    </HierarchicalDataTemplate>
+                </TreeView.ItemTemplate>
+                <TreeView.ItemContainerStyle>
+                    <Style TargetType="{x:Type TreeViewItem}">
+                        <Setter Property="IsExpanded" Value="True"/>
+                    </Style>
+                </TreeView.ItemContainerStyle>
+            </TreeView>
+        </ScrollViewer>
+    </Grid>
+</Window>
