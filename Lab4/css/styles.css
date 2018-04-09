@@ -1,0 +1,8 @@
+img {
+	height: 2em;
+	width: auto;
+}
+
+th > input, td > input {
+	min-width: 75px;
+}

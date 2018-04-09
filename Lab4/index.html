@@ -5,25 +5,694 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, minimum-scale=1.0, shrink-to-fit=no">
 
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="css/bootstrap/bootstrap-4.0.0-beta.3.min.css">
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="css/bootstrap.min.css">
 
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="css/bootstrap-theme.min.css">
+    
     <!-- Custom CSS -->
     <link rel="stylesheet" href="css/styles.css">
 
-    <!-- Optional JavaScript -->
-    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <!-- jQuery first -->
     <script src="js/jquery/jquery-3.2.1.min.js"></script>
-    <script src="js/propper/popper-1.12.9.min.js"></script>
-    <script src="js/bootstrap/bootstrap-4.0.0-beta.3.min.js"></script>
-    <!-- Custom scripts-->
+
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="js/bootstrap.min.js"></script>
+
+    <!-- Custom JavaScript -->
     <script src="js/update.js"></script>
     
-    <title>Home</title>
+    <title>Lab4</title>
   </head>
   <body>
+    <div class="container-fluid">
     <div class="row">
-      
+
+      <div class="col-lg-12">
+        <div class="page-header">
+          <h1>Нечітке виведення на основі нечітких множин</h1>
+        </div>
+      </div>
+
+      <div class="col-lg-6 col-xs-12">
+        <form>
+          <div class="form-group">
+            <label for="inputRule">Нечітке правило</label>
+            <input type="text" class="form-control" id="inputRule" placeholder="Правило" value="Якщо тварина їсть багато корму, то вона виросте великою">
+          </div>
+          <div class="form-group">
+            <label for="inputA">Нечітка множина A</label>
+            <input type="text" class="form-control" id="inputA" placeholder="A" value="Добова кількість корму,кг">
+          </div>
+          <div class="form-group">
+            <label for="inputB">Нечітка множина B</label>
+            <input type="text" class="form-control" id="inputB" placeholder="B" value="Вага, кг">
+          </div>
+        </form>
+      </div>
+      <div class="col-lg-12">
+        <form>
+          <div class="form-group">
+            <label for="inputАQuote">Вхідна нечітка множина А'</label>
+            <div class="table-responsive">
+              <table class="table" id="inputАQuote">
+                <tr>
+                  <td class="table-row-0 table-col-0">
+                    Елемент
+                  </td>
+                  <td>
+                    <input type="text" class="form-control table-row-0 table-col-1" value="5"/>
+                  </td>
+                  <td>
+                    <input type="text" class="form-control table-row-0 table-col-2" value="7" />
+                  </td>
+                  <td>
+                    <input type="text" class="form-control table-row-0 table-col-3" value="8" />
+                  </td>
+                  <td>
+                    <input type="text" class="form-control table-row-0 table-col-4" value="10" />
+                  </td>
+                  <td>
+                    <input type="text" class="form-control table-row-0 table-col-5" value="12" />
+                  </td>
+                  <td>
+                    <input type="text" class="form-control table-row-0 table-col-6" value="15" />
+                  </td>
+                </tr>
+                <tr>
+                  <td class="table-row-0 table-col-0">
+                    Характеристична функція
+                  </td>
+                  <td>
+                    <input type="text" class="form-control table-row-1 table-col-1" value="0" />
+                  </td>
+                  <td>
+                    <input type="text" class="form-control table-row-1 table-col-2" value="0.2" />
+                  </td>
+                  <td>
+                    <input type="text" class="form-control table-row-1 table-col-3" value="0.4" />
+                  </td>
+                  <td>
+                    <input type="text" class="form-control table-row-1 table-col-4" value="0.6" />
+                  </td>
+                  <td>
+                    <input type="text" class="form-control table-row-1 table-col-5" value="0.7" />
+                  </td>
+                  <td>
+                    <input type="text" class="form-control table-row-1 table-col-6" value="0" />
+                  </td>
+                </tr>
+              </table>
+            </div>
+          </div>
+
+
+          <label for="relation-radio-group">Формула обчислення відношень</label>
+          <div class="relation-radio-group">
+            <div class="radio">
+              <label><input type="radio" checked="true" name="relation-radio" id="relation-type-0">Нечітка мін-імплікація<img class="media-object" src="img/MinImpl.png"><br/></label>
+            </div>
+            <div class="radio">
+              <label><input type="radio" name="relation-radio" id="relation-type-1">Нечітке розширення класичної імплікації<img class="media-object" src="img/ClassicImpl.png"><br/></label>
+            </div>
+            <div class="radio">
+              <label><input type="radio" name="relation-radio" id="relation-type-2">Нечітка імплікація Лукаcевича<img class="media-object" src="img/LucImpl.png"></label>
+            </div>
+        </div>
+        </form>
+      </div>
+
+
+      <div class="col-lg-12">
+        <hr/>
+        <label for="result">Результат</label>
+        <div id="result">
+          <h3 style="margin: 15px">
+            <span>
+              V* =
+            </span>
+            <span class ="defadzification-value">
+              0
+            </span>
+          </h3>
+          <hr/>
+        </div>
+      </div>
+
+      <div class="col-lg-12">
+        <div class="page-header">
+          <h3>Крок #1</h3>
+        </div>
+      </div>
+
+      <div class="col-lg-12">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h3 class="panel-title">Фазифікація</h3>
+        </div>
+        <!-- Table -->
+        <div class="table-responsive">
+          <table class="table" id="fazification-table">
+            <tr>
+              <th class="table-row-0 table-col-0">
+
+              </th>
+              <th class="table-row-0 table-col-1">
+                B
+              </th>
+              <th>
+                <input type="text" class="form-control table-row-0 table-col-2" value="400" />
+              </th>
+              <th>
+                <input type="text" class="form-control table-row-0 table-col-3" value="500" />
+              </th>
+              <th>
+                <input type="text" class="form-control table-row-0 table-col-4" value="600" />
+              </th>
+              <th>
+                <input type="text" class="form-control table-row-0 table-col-5" value="700" />
+              </th>
+              <th>
+                <input type="text" class="form-control table-row-0 table-col-6" value="800" />
+              </th>
+              <th>
+                <input type="text" class="form-control table-row-0 table-col-7" value="1000" />
+              </th>
+            </tr>
+            <tr>
+              <th class="table-row-0 table-col-0">
+                A
+              </th>
+              <th class="table-row-0 table-col-1">
+                
+              </th>
+              <th>
+                <input type="text" class="form-control table-row-1 table-col-2" value="0" />
+              </th>
+              <th>
+                <input type="text" class="form-control table-row-1 table-col-3" value="0.2" />
+              </th>
+              <th>
+                <input type="text" class="form-control table-row-1 table-col-4" value="0.4" />
+              </th>
+              <th>
+                <input type="text" class="form-control table-row-1 table-col-5" value="0.6" />
+              </th>
+              <th>
+                <input type="text" class="form-control table-row-1 table-col-6" value="0.7" />
+              </th>
+              <th>
+                <input type="text" class="form-control table-row-1 table-col-7" value="1" />
+              </th>
+            </tr>
+            <tr>
+              <th>
+                <input type="text" class="form-control table-row-2 table-col-0" value="5" />
+              </th>
+              <th>
+                <input type="text" class="form-control table-row-2 table-col-1" value="0" />                
+              </th>
+              <td class="table-row-2 table-col-2">
+                0
+              </td>
+              <td class="table-row-2 table-col-3">
+                0
+              </td>
+              <td class="table-row-2 table-col-4">
+                0
+              </td>
+              <td class="table-row-2 table-col-5">
+                0
+              </td>
+              <td class="table-row-2 table-col-6">
+                0
+              </td>
+              <td class="table-row-2 table-col-7">
+                0
+              </td>
+            </tr>
+            <tr>
+              <th>
+                <input type="text" class="form-control table-row-3 table-col-0" value="7" />
+              </th>
+              <th>
+                <input type="text" class="form-control table-row-3 table-col-1" value="0.3" />                
+              </th>
+              <td class="table-row-3 table-col-2">
+                0
+              </td>
+              <td class="table-row-3 table-col-3">
+                0
+              </td>
+              <td class="table-row-3 table-col-4">
+                0
+              </td>
+              <td class="table-row-3 table-col-5">
+                0
+              </td>
+              <td class="table-row-3 table-col-6">
+                0
+              </td>
+              <td class="table-row-3 table-col-7">
+                0
+              </td>
+            </tr>
+            <tr>
+              <th>
+                <input type="text" class="form-control table-row-4 table-col-0" value="8" />
+              </th>
+              <th>
+                <input type="text" class="form-control table-row-4 table-col-1" value="0.4" />                
+              </th>
+              <td class="table-row-4 table-col-2">
+                0
+              </td>
+              <td class="table-row-4 table-col-3">
+                0
+              </td>
+              <td class="table-row-4 table-col-4">
+                0
+              </td>
+              <td class="table-row-4 table-col-5">
+                0
+              </td>
+              <td class="table-row-4 table-col-6">
+                0
+              </td>
+              <td class="table-row-4 table-col-7">
+                0
+              </td>
+            </tr>
+            <tr>
+              <th>
+                <input type="text" class="form-control table-row-5 table-col-0" value="10" />
+              </th>
+              <th>
+                <input type="text" class="form-control table-row-5 table-col-1" value="0.6" />                
+              </th>
+              <td class="table-row-5 table-col-2">
+                0
+              </td>
+              <td class="table-row-5 table-col-3">
+                0
+              </td>
+              <td class="table-row-5 table-col-4">
+                0
+              </td>
+              <td class="table-row-5 table-col-5">
+                0
+              </td>
+              <td class="table-row-5 table-col-6">
+                0
+              </td>
+              <td class="table-row-5 table-col-7">
+                0
+              </td>
+            </tr>
+            <tr>
+              <th>
+                <input type="text" class="form-control table-row-6 table-col-0" value="12" />
+              </th>
+              <th>
+                <input type="text" class="form-control table-row-6 table-col-1" value="0.8" />                
+              </th>
+              <td class="table-row-6 table-col-2">
+                0
+              </td>
+              <td class="table-row-6 table-col-3">
+                0
+              </td>
+              <td class="table-row-6 table-col-4">
+                0
+              </td>
+              <td class="table-row-6 table-col-5">
+                0
+              </td>
+              <td class="table-row-6 table-col-6">
+                0
+              </td>
+              <td class="table-row-6 table-col-7">
+                0
+              </td>
+            </tr>
+            <tr>
+              <th>
+                <input type="text" class="form-control table-row-7 table-col-0" value="15" />
+              </th>
+              <th>
+                <input type="text" class="form-control table-row-7 table-col-1" value="1" />                
+              </th>
+              <td class="table-row-7 table-col-2">
+                0
+              </td>
+              <td class="table-row-7 table-col-3">
+                0
+              </td>
+              <td class="table-row-7 table-col-4">
+                0
+              </td>
+              <td class="table-row-7 table-col-5">
+                0
+              </td>
+              <td class="table-row-7 table-col-6">
+                0
+              </td>
+              <td class="table-row-7 table-col-7">
+                0
+              </td>
+            </tr>
+          </table>
+        </div>
+      </div>
+      </div>
+
+
+      <div class="col-lg-12">
+        <div class="page-header">
+          <h3>Крок #2</h3>
+        </div>
+      </div>
+
+
+      <div class="col-lg-12">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h3 class="panel-title">Нечіткий висновок</h3>
+        </div>
+        <!-- Table -->
+        <div class="table-responsive">
+          <table class="table" id="fuzzy-table">
+            <tr>
+              <th class="table-row-0 table-col-0">
+
+              </th>
+              <th class="table-row-0 table-col-1">
+                B
+              </th>
+              <th class="table-row-0 table-col-2">
+                400
+              </th>
+              <th class="table-row-0 table-col-3">
+                500
+              </th>
+              <th class="table-row-0 table-col-4">
+                600
+              </th>
+              <th class="table-row-0 table-col-5">
+                700
+              </th>
+              <th class="table-row-0 table-col-6">
+                800
+              </th>
+              <th class="table-row-0 table-col-7">
+                1000
+              </th>
+            </tr>
+            <tr>
+              <th class="table-row-1 table-col-0">
+                A'
+              </th>
+              <th class="table-row-1 table-col-1">
+                
+              </th>
+              <th class="table-row-1 table-col-2">
+                0
+              </th>
+              <th class="table-row-1 table-col-3">
+                0.2
+              </th>
+              <th class="table-row-1 table-col-4">
+                0.4
+              </th>
+              <th class="table-row-1 table-col-5">
+                0.6
+              </th>
+              <th class="table-row-1 table-col-6">
+                0.7
+              </th>
+              <th class="table-row-1 table-col-7">
+                1
+              </th>
+            </tr>
+            <tr>
+              <th class="table-row-2 table-col-0">
+                5
+              </th>
+              <th class="table-row-2 table-col-1">
+                0               
+              </th>
+              <td class="table-row-2 table-col-2">
+                0
+              </td>
+              <td class="table-row-2 table-col-3">
+                0
+              </td>
+              <td class="table-row-2 table-col-4">
+                0
+              </td>
+              <td class="table-row-2 table-col-5">
+                0
+              </td>
+              <td class="table-row-2 table-col-6">
+                0
+              </td>
+              <td class="table-row-2 table-col-7">
+                0
+              </td>
+            </tr>
+            <tr>
+              <th class="table-row-3 table-col-0">
+                7
+              </th>
+              <th class="table-row-3 table-col-1">
+                0.4           
+              </th>
+              <td class="table-row-3 table-col-2">
+                0
+              </td>
+              <td class="table-row-3 table-col-3">
+                0
+              </td>
+              <td class="table-row-3 table-col-4">
+                0
+              </td>
+              <td class="table-row-3 table-col-5">
+                0
+              </td>
+              <td class="table-row-3 table-col-6">
+                0
+              </td>
+              <td class="table-row-3 table-col-7">
+                0
+              </td>
+            </tr>
+            <tr>
+              <th class="table-row-4 table-col-0">
+                8
+              </th>
+              <th class="table-row-4 table-col-1">
+                0.5             
+              </th>
+              <td class="table-row-4 table-col-2">
+                0
+              </td>
+              <td class="table-row-4 table-col-3">
+                0
+              </td>
+              <td class="table-row-4 table-col-4">
+                0
+              </td>
+              <td class="table-row-4 table-col-5">
+                0
+              </td>
+              <td class="table-row-4 table-col-6">
+                0
+              </td>
+              <td class="table-row-4 table-col-7">
+                0
+              </td>
+            </tr>
+            <tr>
+              <th class="table-row-5 table-col-0">
+                10
+              </th>
+              <th class="table-row-5 table-col-1">
+                0.8           
+              </th>
+              <td class="table-row-5 table-col-2">
+                0
+              </td>
+              <td class="table-row-5 table-col-3">
+                0
+              </td>
+              <td class="table-row-5 table-col-4">
+                0
+              </td>
+              <td class="table-row-5 table-col-5">
+                0
+              </td>
+              <td class="table-row-5 table-col-6">
+                0
+              </td>
+              <td class="table-row-5 table-col-7">
+                0
+              </td>
+            </tr>
+            <tr>
+              <th class="table-row-6 table-col-0">
+                12
+              </th>
+              <th class="table-row-6 table-col-1">
+                0.6             
+              </th>
+              <td class="table-row-6 table-col-2">
+                0
+              </td>
+              <td class="table-row-6 table-col-3">
+                0
+              </td>
+              <td class="table-row-6 table-col-4">
+                0
+              </td>
+              <td class="table-row-6 table-col-5">
+                0
+              </td>
+              <td class="table-row-6 table-col-6">
+                0
+              </td>
+              <td class="table-row-6 table-col-7">
+                0
+              </td>
+            </tr>
+            <tr>
+              <th class="table-row-7 table-col-0">
+                15
+              </th>
+              <th class="table-row-7 table-col-1">
+                0               
+              </th>
+              <td class="table-row-7 table-col-2">
+                0
+              </td>
+              <td class="table-row-7 table-col-3">
+                0
+              </td>
+              <td class="table-row-7 table-col-4">
+                0
+              </td>
+              <td class="table-row-7 table-col-5">
+                0
+              </td>
+              <td class="table-row-7 table-col-6">
+                0
+              </td>
+              <td class="table-row-7 table-col-7">
+                0
+              </td>
+            </tr>
+
+
+            <tr>
+              <td class="table-row-8 table-col-0" colspan="8">
+              </td>
+            </tr>
+
+            <tr>
+              <th class="table-row-9 table-col-0">
+                
+              </th>
+              <th class="table-row-9 table-col-1">
+                B'               
+              </th>
+              <th class="table-row-9 table-col-2">
+                400
+              </th>
+              <th class="table-row-9 table-col-3">
+                500
+              </th>
+              <th class="table-row-9 table-col-4">
+                600
+              </th>
+              <th class="table-row-9 table-col-5">
+                700
+              </th>
+              <th class="table-row-9 table-col-6">
+                800
+              </th>
+              <th class="table-row-9 table-col-7">
+                1000
+              </th>
+            </tr>
+            <tr>
+              <th class="table-row-10 table-col-0">
+                
+              </th>
+              <th class="table-row-10 table-col-1">
+
+              </th>
+              <th class="table-row-10 table-col-2">
+                0
+              </th>
+              <th class="table-row-10 table-col-3">
+                0
+              </th>
+              <th class="table-row-10 table-col-4">
+                0
+              </th>
+              <th class="table-row-10 table-col-5">
+                0
+              </th>
+              <th class="table-row-10 table-col-6">
+                0
+              </th>
+              <th class="table-row-10 table-col-7">
+                0
+              </th>
+            </tr>
+          </table>
+        </div>
+      </div>
+      </div>
+
+
+      <div class="col-lg-12">
+        <div class="page-header">
+          <h3>Крок #3</h3>
+        </div>
+      </div>
+
+
+      <div class="col-lg-12">
+      <div class="panel panel-default">
+        <div class="panel-heading">
+          <h3 class="panel-title">Дефадзифікація множини B'</h3>
+        </div>
+        <div>
+          <h3 style="margin: 15px">
+            <span>
+              V* =
+            </span>
+            <span class = "defadzification-value">
+              0
+            </span>
+          </h3>
+        </div>
+      </div>
+
+      <hr/>
+      Дмитро Хижняк &copy; 2018
+      <br/>
+      <br/>
+      <br/>
+      <br/>
+      <br/> 
+      </div>
+
+
+
+
     </div>
+  </div>
   </body>
 </html>
